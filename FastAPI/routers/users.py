@@ -1,9 +1,9 @@
 # Iniciar el server: uvicorn users:app --reload
-from fastapi import FastAPI, HTTPException
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
 
-app = FastAPI()
+router = APIRouter()
 
 # Entidad user
 class User(BaseModel):
@@ -28,7 +28,7 @@ def search_user(user_id: int) -> Optional[User]:
     return None
 
 # Rutas
-@app.get("/usersjson")
+@router.get("/usersjson")
 async def usersjson():
     return [
         {"name": "Rick", "surname": "Sanchez", "url": "https://korm.com", "age": 70},
@@ -36,32 +36,32 @@ async def usersjson():
         {"name": "Summer", "surname": "Smith", "url": "https://korm.com", "age": 59},
     ]
 
-@app.get("/users")
+@router.get("/users")
 async def get_users():
     return users_list
 
-@app.get("/user/{id}")
+@router.get("/user/{id}")
 async def get_user(id: int):
     user = search_user(id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
-@app.get("/user/")
+@router.get("/user/")
 async def user_query(id: int):
     user = search_user(id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
-@app.post("/user/", response_model=User, status_code=201)
+@router.post("/user/", response_model=User, status_code=201)
 async def create_user(user: User):
     if search_user(user.id) is not None:
         raise HTTPException(status_code=400, detail="User already exists")
     users_list.append(user)
     return user
 
-@app.put("/user/", response_model=User)
+@router.put("/user/", response_model=User)
 async def update_user(user: User):
     user_found = search_user(user.id)
     if user_found is not None:
@@ -71,7 +71,7 @@ async def update_user(user: User):
     else:
         raise HTTPException(status_code=404, detail="User not found")
 
-@app.delete("/user/{id}", response_model=User)
+@router.delete("/user/{id}", response_model=User)
 async def delete_user(id: int):
     user_found = search_user(id)
     if user_found is not None:
